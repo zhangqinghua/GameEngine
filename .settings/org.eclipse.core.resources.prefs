@@ -1,4 +1,4 @@
 eclipse.preferences.version=1
-encoding//src/renderEngine/Renderer.java=UTF-8
+encoding//src/renderEngine/EntityRenderer.java=UTF-8
 encoding//src/shaders/ShaderProgram.java=UTF-8
 encoding//src/shaders/StaticShader.java=UTF-8

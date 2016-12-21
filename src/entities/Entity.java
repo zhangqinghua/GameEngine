@@ -2,7 +2,7 @@ package entities;
 
 import org.lwjgl.util.vector.Vector3f;
 
-import model.Model;
+import models.Model;
 
 public class Entity {
 	private Model model;

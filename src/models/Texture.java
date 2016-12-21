@@ -1,8 +1,8 @@
-package model;
+package models;
 
 public class Texture {
 
-	private int textureID;
+	private int id;
 	private float shineDamper = 1;
 	private float reflectivity = 0;
 
@@ -22,17 +22,19 @@ public class Texture {
 		this.reflectivity = reflectivity;
 	}
 
-	public Texture(int textureID) {
+	public Texture(int id) {
 		super();
-		this.textureID = textureID;
+		this.id = id;
 	}
 
-	public int getTextureID() {
-		return textureID;
+	public int getId() {
+		return id;
 	}
 
-	public void setTextureID(int textureID) {
-		this.textureID = textureID;
+	public void setId(int id) {
+		this.id = id;
 	}
+
+	
 
 }
