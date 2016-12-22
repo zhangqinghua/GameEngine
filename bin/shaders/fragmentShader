@@ -3,6 +3,7 @@
 in vec3 FragPos;
 in vec3 Normal;
 in vec2 TexCoords;
+in float visibility;
 
 out vec4 color;
 
@@ -10,12 +11,23 @@ uniform vec3 lightColour;
 uniform vec3 lightPos; 
 uniform vec3 viewPos;
 uniform sampler2D textureSampler;
+
+uniform float useFakeLighting;
+
+uniform vec3 skyColour;
+
 void main() {
 	/*环境光*/
     vec3 ambient = 0.1f * lightColour;
     
+    vec3 actualNormal = Normal;
+    if (useFakeLighting > 0.5f) {
+    	actualNormal = vec3(1.0f, 1.0f, 0.0f);
+    }
+    
 	/*漫反射光*/
-	vec3 norm = normalize(Normal);
+	vec3 norm = normalize(actualNormal);
+	
 	vec3 lightDir = normalize(lightPos - FragPos);
 	float diff = max(dot(norm, lightDir), 0.0f);
     vec3 diffuse = diff * lightColour;
@@ -26,6 +38,12 @@ void main() {
     vec3 reflectDir = reflect(-lightDir, norm);  
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
     vec3 specular = specularStrength * spec * lightColour; 
+    
+    vec4 textureColour = texture(textureSampler, TexCoords);
+    if (textureColour.a < 0.5f) {
+    	discard;
+    }
 	
 	color = vec4(ambient + diffuse + specular, 1.0f) * texture(textureSampler, TexCoords);
+	color = mix(vec4(skyColour, 1.0f), color, visibility);
 }

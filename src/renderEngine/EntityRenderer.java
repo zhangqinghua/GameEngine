@@ -42,19 +42,25 @@ public class EntityRenderer {
 	private void prepareModel(Model model) {
 		Raw raw = model.getRaw();
 		Texture texture = model.getTexture();
+		
+		if (texture.isHasTransparency()) {
+			MasterRenderer.disableCulling();
+		}
+		shader.loadFakeLightingVariable(texture.isUseFakeLighting());
 
 		GL30.glBindVertexArray(raw.getVaoID());
 		GL20.glEnableVertexAttribArray(0);
 		GL20.glEnableVertexAttribArray(1);
 		GL20.glEnableVertexAttribArray(2);
 
-		shader.loadShineVariablee(texture.getShineDamper(), texture.getReflectivity());
+		shader.loadShineVariables(texture.getShineDamper(), texture.getReflectivity());
 		GL13.glActiveTexture(GL13.GL_TEXTURE0);
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture.getId());
 
 	}
 
 	private void unbindModel() {
+		MasterRenderer.enableCulling();
 		GL20.glDisableVertexAttribArray(0);
 		GL20.glDisableVertexAttribArray(1);
 		GL20.glDisableVertexAttribArray(2);

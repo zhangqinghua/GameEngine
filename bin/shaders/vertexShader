@@ -7,14 +7,26 @@ in vec2 texCoords;
 out vec3 Normal;
 out vec3 FragPos;
 out vec2 TexCoords;
+out float visibility;
 /*外部变量*/
 uniform mat4 model;
 uniform mat4 projection;
 uniform mat4 view;
 
+const float density = 0.0035f;
+const float gradient = 5.0f;
+
 void main (void) {
-	gl_Position = projection * view * model * vec4(position, 1.0f);
+	vec4 worldPosition = model * vec4(position, 1.0f);
+	vec4 positionRelativeToCam = view * worldPosition;
+	
+	gl_Position = projection * positionRelativeToCam;
+	
 	FragPos = vec3(model * vec4(position, 1.0f));
     Normal = mat3(transpose(inverse(model))) * normal;  
     TexCoords = texCoords;
+    
+    float distance = length(positionRelativeToCam.xyz);
+    visibility = exp(-pow(distance * density, gradient));
+    visibility = clamp(visibility, 0.0f, 1.0f);
 }

@@ -2,6 +2,8 @@ package terrains;
 
 import models.Raw;
 import renderEngine.Loader;
+import textures.TerrainTexture;
+import textures.TerrainTexturePack;
 import models.Texture;
 
 public class Terrain {
@@ -12,13 +14,16 @@ public class Terrain {
 	private float x;
 	private float z;
 	private Raw raw;
-	private Texture texture;
 
-	public Terrain(int gridX, int gridZ, Loader loader, Texture texture) {
-		this.texture = texture;
+	private TerrainTexturePack texturePack;
+	private TerrainTexture blendMap;
+
+	public Terrain(int gridX, int gridZ, Loader loader, TerrainTexturePack texturePack, TerrainTexture blendMap) {
 		this.x = gridX * SIZE;
 		this.z = gridZ * SIZE;
 		this.raw = generateTerrain(loader);
+		this.texturePack = texturePack;
+		this.blendMap = blendMap;
 	}
 
 	public float getX() {
@@ -33,8 +38,12 @@ public class Terrain {
 		return raw;
 	}
 
-	public Texture getTexture() {
-		return texture;
+	public TerrainTexturePack getTexturePack() {
+		return texturePack;
+	}
+
+	public TerrainTexture getBlendMap() {
+		return blendMap;
 	}
 
 	private Raw generateTerrain(Loader loader) {

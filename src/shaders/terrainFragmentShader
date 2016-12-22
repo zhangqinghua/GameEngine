@@ -3,21 +3,40 @@
 in vec3 FragPos;
 in vec3 Normal;
 in vec2 TexCoords;
+in float visibility;
 
 out vec4 color;
 
 uniform vec3 lightColour;
 uniform vec3 lightPos; 
 uniform vec3 viewPos;
-uniform sampler2D textureSampler;
+uniform sampler2D backgroundTexture;
+uniform sampler2D rTexture;
+uniform sampler2D gTexture;
+uniform sampler2D bTexture;
+uniform sampler2D blendMap;
+
+uniform float useFakeLighting;
+uniform vec3 skyColour;
 void main() {
+	
+	vec4 blendMapColour = texture(blendMap, TexCoords);
+	float backTextureAmount = 1 - (blendMapColour.r + blendMapColour.g + blendMapColour.b);
+	vec2 tiledCoords = TexCoords * 40;
+	vec4 backgroundTextureColour = texture(backgroundTexture, tiledCoords) * backTextureAmount;
+	vec4 rTextureColour = texture(rTexture, tiledCoords) * blendMapColour.r;
+	vec4 gTextureColour = texture(gTexture, tiledCoords) * blendMapColour.g;
+	vec4 bTextureColour = texture(bTexture, tiledCoords) * blendMapColour.b;
+	vec4 totalColour = backgroundTextureColour + rTextureColour + gTextureColour + bTextureColour;
+
+
 	/*环境光*/
-    vec3 ambient = 0.1f * lightColour;
+    vec3 ambient = 0.2f * lightColour;
     
 	/*漫反射光*/
 	vec3 norm = normalize(Normal);
 	vec3 lightDir = normalize(lightPos - FragPos);
-	float diff = max(dot(norm, lightDir), 0.0f);
+	float diff = max(dot(norm, lightDir), 0.2f);
     vec3 diffuse = diff * lightColour;
 	
 	/*镜面反射光*/
@@ -27,5 +46,6 @@ void main() {
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
     vec3 specular = specularStrength * spec * lightColour; 
 	
-	color = vec4(ambient + diffuse + specular, 1.0f) * texture(textureSampler, TexCoords);
+	color = vec4(ambient + diffuse + specular, 1.0f) * totalColour;
+	color = mix(vec4(skyColour, 1.0f), color, visibility);
 }
