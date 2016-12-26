@@ -59,7 +59,7 @@ public class MainGameLoop {
 
 		Light sun = new Light(new Vector3f(100, -10, 100), new Vector3f(1, 1, 1));
 
-		Camera camera = new Camera();
+		
 
 		MasterRenderer renderer = new MasterRenderer();
 
@@ -73,7 +73,9 @@ public class MainGameLoop {
 		Terrain terrain = new Terrain(0, -1, loader, terrainPack, blendMap);
 		Terrain terrain1 = new Terrain(-1, -1, loader, terrainPack, blendMap);
 
-		Player player = new Player(new Model(OBJLoader.loadMoadel("stanfordBunny", loader), new Texture(loader.loadTexture("white"))), new Vector3f(0, 0, -30), 0, 0, 0, 1);
+		Player player = new Player(new Model(OBJLoader.loadMoadel("person", loader), new Texture(loader.loadTexture("playerTexture"))), new Vector3f(0, 0, -30), 0, 0, 0, 1);
+		
+		Camera camera = new Camera(player);
 		while (!Display.isCloseRequested()) {
 			// Game logic
 			// entity.increasePosition(0.0f, 0.0f, -0.001f);
