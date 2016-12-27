@@ -13,6 +13,9 @@ uniform mat4 model;
 uniform mat4 projection;
 uniform mat4 view;
 
+uniform float numberOfRows;
+uniform vec2 offset; 
+
 const float density = 0.0035f;
 const float gradient = 5.0f;
 
@@ -24,7 +27,7 @@ void main (void) {
 	
 	FragPos = vec3(model * vec4(position, 1.0f));
     Normal = mat3(transpose(inverse(model))) * normal;  
-    TexCoords = texCoords;
+    TexCoords = texCoords / numberOfRows + offset;
     
     float distance = length(positionRelativeToCam.xyz);
     visibility = exp(-pow(distance * density, gradient));

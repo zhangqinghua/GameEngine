@@ -14,8 +14,9 @@ uniform sampler2D textureSampler;
 
 uniform float useFakeLighting;
 
-uniform vec3 skyColour;
 
+
+uniform vec3 skyColour;
 void main() {
 	/*»·¾³¹â*/
     vec3 ambient = 0.1f * lightColour;

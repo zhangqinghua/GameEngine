@@ -5,12 +5,15 @@ import java.util.List;
 import java.util.Random;
 
 import org.lwjgl.opengl.Display;
+import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
 import entities.Camera;
 import entities.Entity;
 import entities.Light;
 import entities.Player;
+import guis.GuiRenderer;
+import guis.GuiTexture;
 import models.Model;
 import models.Raw;
 import models.Texture;
@@ -28,23 +31,36 @@ public class MainGameLoop {
 		DisplayManager.createDisplay();
 		Loader loader = new Loader();
 
-		Model grass = new Model(OBJLoader.loadMoadel("grassModel", loader), new Texture(loader.loadTexture("grassTexture")));
+		MasterRenderer renderer = new MasterRenderer();
+
+		TerrainTexture backgroundTexture = new TerrainTexture(loader.loadTexture("grassy2"));
+		TerrainTexture rTexture = new TerrainTexture(loader.loadTexture("dirt"));
+		TerrainTexture gTexture = new TerrainTexture(loader.loadTexture("grassFlowers"));
+		TerrainTexture bTexture = new TerrainTexture(loader.loadTexture("path"));
+		TerrainTexturePack terrainPack = new TerrainTexturePack(backgroundTexture, rTexture, gTexture, bTexture);
+		TerrainTexture blendMap = new TerrainTexture(loader.loadTexture("blendMap"));
+		Terrain terrain = new Terrain(-1, -1, loader, terrainPack, blendMap, "heightmap");
+
+		Model grass = new Model(OBJLoader.loadMoadel("fern", loader), new Texture(loader.loadTexture("fern"), 2));
 		grass.getTexture().setHasTransparency(true);
 		grass.getTexture().setUseFakeLighting(true);
 		List<Entity> grassList = new ArrayList<Entity>();
 		Random random = new Random();
 		for (int i = 0; i < 500; i++) {
-			grassList.add(new Entity(grass, new Vector3f(random.nextFloat() * 800 - 400, 0, random.nextFloat() * -600), 0, 0, 0, 3));
-			grassList.add(new Entity(grass, new Vector3f(random.nextFloat() * 800 - 400, 0, random.nextFloat() * -600), 0, 0, 0, 1f));
-			grassList.add(new Entity(grass, new Vector3f(random.nextFloat() * 800 - 400, 0, random.nextFloat() * -600), 0, 0, 0, 0.5f));
-		}
+			if (i % 1 == 0) {
+				float x = random.nextFloat() * 800 - 800;
+				float z = random.nextFloat() * -800;
+				float y = terrain.getHeightOfTerrain(x, z);
+				grassList.add(new Entity(grass, random.nextInt(4), new Vector3f(x, y, z), 0, random.nextFloat() * 360, 0, 2.9f));
+			}
 
+		}
 		Raw raw = OBJLoader.loadMoadel("tree", loader);
 		Texture texture = new Texture(loader.loadTexture("tree"));
 		texture.setShineDamper(32);
 		texture.setReflectivity(0.1f);
 		Model model = new Model(raw, texture);
-		Entity entity = new Entity(model, new Vector3f(0, 0, -25), 0, 0, 0, 1);
+		// Entity entity = new Entity(model, new Vector3f(0, 0, -25), 0, 0, 0, 1);
 		List<Entity> allCubes = new ArrayList<Entity>();
 		for (int i = 0; i < 100; i++) {
 			float x = random.nextFloat() * 800 - 400;
@@ -59,42 +75,34 @@ public class MainGameLoop {
 
 		Light sun = new Light(new Vector3f(100, -10, 100), new Vector3f(1, 1, 1));
 
-		
+		Player player = new Player(new Model(OBJLoader.loadMoadel("person", loader), new Texture(loader.loadTexture("playerTexture"))), new Vector3f(-300, 0, -300), 0, 0, 0, 1);
 
-		MasterRenderer renderer = new MasterRenderer();
-
-		TerrainTexture backgroundTexture = new TerrainTexture(loader.loadTexture("grassy"));
-		TerrainTexture rTexture = new TerrainTexture(loader.loadTexture("dirt"));
-		TerrainTexture gTexture = new TerrainTexture(loader.loadTexture("grassFlowers"));
-		TerrainTexture bTexture = new TerrainTexture(loader.loadTexture("path"));
-		TerrainTexturePack terrainPack = new TerrainTexturePack(backgroundTexture, rTexture, gTexture, bTexture);
-		TerrainTexture blendMap = new TerrainTexture(loader.loadTexture("blendMap"));
-
-		Terrain terrain = new Terrain(0, -1, loader, terrainPack, blendMap);
-		Terrain terrain1 = new Terrain(-1, -1, loader, terrainPack, blendMap);
-
-		Player player = new Player(new Model(OBJLoader.loadMoadel("person", loader), new Texture(loader.loadTexture("playerTexture"))), new Vector3f(0, 0, -30), 0, 0, 0, 1);
-		
 		Camera camera = new Camera(player);
+
+		List<GuiTexture> guis = new ArrayList<GuiTexture>();
+		GuiTexture gui = new GuiTexture(loader.loadTexture("socuwan"), new Vector2f(0.5f, 0.05f), new Vector2f(0.25f, 0.25f));
+		guis.add(gui);
+		GuiRenderer guiRenderer = new GuiRenderer(loader);
 		while (!Display.isCloseRequested()) {
 			// Game logic
-			// entity.increasePosition(0.0f, 0.0f, -0.001f);
-			// entity.increaseRotation(0.0f, 0.1f, 0.0f);
 			camera.move();
-			player.move();
+			player.move(terrain);
+
 			// Render
 			for (Entity cube : allCubes) {
-				renderer.processEntity(cube);
+				// renderer.processEntity(cube);
 			}
 			for (Entity g : grassList) {
 				renderer.processEntity(g);
 			}
+
 			renderer.processEntity(player);
 			renderer.processTerrain(terrain);
-			renderer.processTerrain(terrain1);
 			renderer.render(sun, camera);
+			guiRenderer.render(guis);
 			DisplayManager.updateDisplay();
 		}
+		guiRenderer.cleanUp();
 		renderer.cleanUp();
 		loader.cleanUp();
 		DisplayManager.closeDisplay();
