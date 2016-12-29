@@ -1,5 +1,32 @@
 #version 400 core
 
+struct Light {
+	float isExist;
+	
+    vec3 position;
+    vec3 color;
+
+    float constant;
+    float linear;
+    float quadratic;
+    
+    vec3 direction;
+    float cutOff;
+};
+
+struct Material {
+    sampler2D diffuse;
+    sampler2D specular;
+    
+    float     shininess;
+
+	int numberOfRows;
+	vec2 offset;
+	
+	float hasTransparency;
+	float useFakeLighting;
+};
+
 in vec3 FragPos;
 in vec3 Normal;
 in vec2 TexCoords;
@@ -7,44 +34,107 @@ in float visibility;
 
 out vec4 color;
 
-uniform vec3 lightColour;
-uniform vec3 lightPos; 
+const int MAX_LIGHT_NUM = 4;
+uniform Light lights[4];
+
+
+uniform Light light;
+
+uniform Material material;
+
 uniform vec3 viewPos;
-uniform sampler2D textureSampler;
-
-uniform float useFakeLighting;
-
-
-
 uniform vec3 skyColour;
+
+uniform sampler2D samplerTexture;
+
+// Function prototypes
+vec4 CalcDirLight(Light light, Material material, vec3 normal, vec3 viewDir, vec2 TexCoords);
+vec3 CalcPointLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir);
+
 void main() {
-	/*环境光*/
-    vec3 ambient = 0.1f * lightColour;
-    
-    vec3 actualNormal = Normal;
-    if (useFakeLighting > 0.5f) {
+	/*视线方向*/
+	vec3 viewDir = normalize(viewPos - FragPos);
+	
+	/*应对多张贴图情况*/
+	vec2 texCoords = TexCoords / material.numberOfRows + material.offset;
+
+	/*草地normal向上*/
+	vec3 actualNormal = Normal;
+    if (material.useFakeLighting > 0.5f) {
     	actualNormal = vec3(1.0f, 1.0f, 0.0f);
     }
+    vec3 norm = normalize(actualNormal);
     
-	/*漫反射光*/
-	vec3 norm = normalize(actualNormal);
-	
-	vec3 lightDir = normalize(lightPos - FragPos);
-	float diff = max(dot(norm, lightDir), 0.0f);
-    vec3 diffuse = diff * lightColour;
-	
-	/*镜面反射光*/
-	float specularStrength = 0.5f;
-    vec3 viewDir = normalize(viewPos - FragPos);
-    vec3 reflectDir = reflect(-lightDir, norm);  
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
-    vec3 specular = specularStrength * spec * lightColour; 
+    vec4 textureColour = texture(material.diffuse, texCoords);
+    if (textureColour.a < 0.5f) {
+    	//discard;
+    }
     
+    
+    if (lights[1].isExist == 0.5f) {
+    	color = vec4(lights[1].isExist,lights[1].isExist,lights[1].isExist,1);	
+    }
+    
+    
+    for (int i = 0; i < 2; i++) {
+    	// color += CalcDirLight(lights[i], material, norm, viewDir, texCoords);
+    }
+    
+    
+    
+    // color = mix(vec4(skyColour, 1.0f), color, visibility);
+    // color = color;
+    /*
     vec4 textureColour = texture(textureSampler, TexCoords);
     if (textureColour.a < 0.5f) {
     	discard;
     }
+    */
+	/*环境光*/
+   // vec3 ambient = 0.1f * lightColour;
 	
-	color = vec4(ambient + diffuse + specular, 1.0f) * texture(textureSampler, TexCoords);
-	color = mix(vec4(skyColour, 1.0f), color, visibility);
+   	
+	
+	//color = vec4(ambient + diffuse + specular, 1.0f) * texture(textureSampler, TexCoords);
+	//
+	
+}
+
+
+// Calculates the color when using a directional light.
+vec4 CalcDirLight(Light light, Material material, vec3 normal, vec3 viewDir, vec2 TexCoords)
+{
+    vec3 lightDir = normalize(-light.direction);
+    // Diffuse shading
+    float diff = max(dot(normal, lightDir), 0.0);
+    // Specular shading
+    vec3 reflectDir = reflect(-lightDir, normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    // Combine results
+    vec3 ambient = light.color * vec3(texture(material.diffuse, TexCoords));
+    vec3 diffuse = light.color * diff * vec3(texture(material.diffuse, TexCoords));
+    vec3 specular = light.color * spec * vec3(texture(material.specular, TexCoords));
+   	return vec4((ambient + diffuse + specular), 1.0f);
+}
+
+// Calculates the color when using a point light.
+vec3 CalcPointLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir)
+{
+    vec3 lightDir = normalize(light.position - fragPos);
+    // Diffuse shading
+    float diff = max(dot(normal, lightDir), 0.0);
+    // Specular shading
+    vec3 reflectDir = reflect(-lightDir, normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    // Attenuation
+    float distance = length(light.position - fragPos);
+    float attenuation = 1.0f / (light.constant + light.linear * distance + light.quadratic * (distance * distance));    
+    // Combine results
+    vec3 ambient = light.color * vec3(texture(material.diffuse, TexCoords));
+    vec3 diffuse = light.color * diff * vec3(texture(material.diffuse, TexCoords));
+    vec3 specular = light.color * spec * vec3(texture(material.specular, TexCoords));
+    ambient *= attenuation;
+    diffuse *= attenuation;
+    specular *= attenuation;
+    return (ambient + diffuse + specular);
 }

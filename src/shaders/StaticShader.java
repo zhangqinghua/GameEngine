@@ -1,11 +1,16 @@
 package shaders;
 
+import java.util.List;
+
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL13;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
 import entities.Camera;
 import entities.Light;
+import models.Texture;
 import toolbox.Maths;
 
 public class StaticShader extends ShaderProgram {
@@ -17,18 +22,7 @@ public class StaticShader extends ShaderProgram {
 	private int location_view;
 	private int location_projection;
 
-	private int location_lightPosition;
-	private int location_lightColour;
-
-	private int location_shineDamper;
-	private int location_reflectivity;
-
-	private int location_useFakeLighting;
-
 	private int location_skyColour;
-
-	private int location_numberOfRows;
-	private int location_offset;
 
 	public StaticShader() {
 		super(VERTEX_FILE, FRAGMENT_FILE);
@@ -47,17 +41,7 @@ public class StaticShader extends ShaderProgram {
 		location_view = super.getUniformLocation("view");
 		location_projection = super.getUniformLocation("projection");
 
-		location_lightPosition = super.getUniformLocation("lightPosition");
-		location_lightColour = super.getUniformLocation("lightColour");
-		location_shineDamper = super.getUniformLocation("shineDamper");
-		location_reflectivity = super.getUniformLocation("reflectivity");
-
-		location_useFakeLighting = super.getUniformLocation("useFakeLighting");
-
 		location_skyColour = super.getUniformLocation("skyColour");
-
-		location_numberOfRows = super.getUniformLocation("numberOfRows");
-		location_offset = super.getUniformLocation("offset");
 	}
 
 	public void loadTransformation(Matrix4f matrix) {
@@ -73,30 +57,45 @@ public class StaticShader extends ShaderProgram {
 		super.loadMatrix(location_projection, matrix);
 	}
 
-	public void loadLight(Light light) {
-		super.loadVertor(location_lightPosition, light.getPosition());
-		super.loadVertor(location_lightColour, light.getColour());
+	public void loadLights(List<Light> lights) {
+		for (int i = 0; i < lights.size(); i++) {
+			System.out.println(i);
+			super.loadFloat(super.getUniformLocation("lights[" + i + "].isExist"), 0.5f);
+			
+			super.loadVertor(super.getUniformLocation("lights[" + i + "].position"), lights.get(i).getPosition());
+			super.loadVertor(super.getUniformLocation("lights[" + i + "].color"), lights.get(i).getColor());
 
+			super.loadFloat(super.getUniformLocation("lights[" + i + "].constant"), lights.get(i).getConstant());
+			super.loadFloat(super.getUniformLocation("lights[" + i + "].linear"), lights.get(i).getLinear());
+			super.loadFloat(super.getUniformLocation("lights[" + i + "].quadratic"), lights.get(i).getQuadratic());
+
+			super.loadVertor(super.getUniformLocation("lights[" + i + "].direction"), lights.get(i).getDirection());
+			super.loadFloat(super.getUniformLocation("lights[" + i + "].cutOff"), lights.get(i).getCutOff());
+		}
 	}
 
-	public void loadShineVariables(float damper, float reflectivity) {
-		super.loadFloat(location_shineDamper, damper);
-		super.loadFloat(location_reflectivity, reflectivity);
-	}
+	public void loadMaterial(Texture material) {
+		GL13.glActiveTexture(GL13.GL_TEXTURE0);
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, material.getDiffuseId());
+		super.loadInt(super.getUniformLocation("material.diffuse"), 0);
+		GL13.glActiveTexture(GL13.GL_TEXTURE1);
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, material.getSpecularId());
+		super.loadInt(super.getUniformLocation("material.specular"), 1);
 
-	public void loadFakeLightingVariable(boolean useFake) {
-		super.loadBoolean(location_useFakeLighting, useFake);
+		super.loadFloat(super.getUniformLocation("material.shininess"), material.getShininess());
+
+		super.loadInt(super.getUniformLocation("material.numberOfRows"), material.getNumberOfRows());
+		// super.loadInt(super.getUniformLocation("material.offset"), "");
+
+		super.loadBoolean(super.getUniformLocation("material.hasTransparency"), material.isHasTransparency());
+		super.loadBoolean(super.getUniformLocation("material.useFakeLighting"), material.isUseFakeLighting());
 	}
 
 	public void loadSkyColour(float r, float g, float b) {
 		super.loadVertor(location_skyColour, new Vector3f(r, g, b));
 	}
 
-	public void loadNumberOfRows(int numberOfRows) {
-		super.loadFloat(location_numberOfRows, numberOfRows);
-	}
-
-	public void loadOffset(float x, float y) {
-		super.load2DVertor(location_offset, new Vector2f(x, y));
+	public void loadOffset(Vector2f offset) {
+		super.load2DVertor(super.getUniformLocation("material.offset"), offset);
 	}
 }

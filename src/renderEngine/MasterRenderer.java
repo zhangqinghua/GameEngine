@@ -51,18 +51,18 @@ public class MasterRenderer {
 	
 	
 
-	public void render(Light sun, Camera camera) {
+	public void render(List<Light> lights, Camera camera) {
 		prepare();
 
 		staticShader.start();
-		staticShader.loadLight(sun);
+		staticShader.loadLights(lights);
 		staticShader.loadView(camera);
 		staticShader.loadSkyColour(RED, GREEN, BLUE);
 		entityRenderer.render(entities);
 		staticShader.stop();
 
 		terrainShader.start();
-		terrainShader.loadLight(sun);
+		terrainShader.loadLight(lights.get(0));
 		terrainShader.loadView(camera);
 		terrainShader.loadSkyColour(RED, GREEN, BLUE);
 		terrainRenderer.render(terrains);

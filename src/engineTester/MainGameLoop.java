@@ -57,8 +57,6 @@ public class MainGameLoop {
 		}
 		Raw raw = OBJLoader.loadMoadel("tree", loader);
 		Texture texture = new Texture(loader.loadTexture("tree"));
-		texture.setShineDamper(32);
-		texture.setReflectivity(0.1f);
 		Model model = new Model(raw, texture);
 		// Entity entity = new Entity(model, new Vector3f(0, 0, -25), 0, 0, 0, 1);
 		List<Entity> allCubes = new ArrayList<Entity>();
@@ -73,8 +71,9 @@ public class MainGameLoop {
 			allCubes.add(new Entity(model, new Vector3f(x, y, z), rotX, rotY, 0.0f, 8.0f));
 		}
 
-		Light sun = new Light(new Vector3f(100, -10, 100), new Vector3f(1, 1, 1));
-
+		List<Light> lights = new ArrayList<Light>();
+		Light sun = new Light(new Vector3f(0, 0, 0), new Vector3f(1, 1, 1));
+		lights.add(sun);
 		Player player = new Player(new Model(OBJLoader.loadMoadel("person", loader), new Texture(loader.loadTexture("playerTexture"))), new Vector3f(-300, 0, -300), 0, 0, 0, 1);
 
 		Camera camera = new Camera(player);
@@ -98,7 +97,7 @@ public class MainGameLoop {
 
 			renderer.processEntity(player);
 			renderer.processTerrain(terrain);
-			renderer.render(sun, camera);
+			renderer.render(lights, camera);
 			guiRenderer.render(guis);
 			DisplayManager.updateDisplay();
 		}

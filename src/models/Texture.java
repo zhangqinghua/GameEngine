@@ -1,56 +1,59 @@
 package models;
 
 public class Texture {
+	private int diffuseId;
+	private int specularId;
 
-	private int id;
-	private float shineDamper = 1;
-	private float reflectivity = 0;
-	private boolean hasTransparency = false;
-	private boolean useFakeLighting = false;
+	private float shininess;
 
-	private int numberOfRows = 1;
+	private boolean hasTransparency;
+	private boolean useFakeLighting;
 
-	public float getShineDamper() {
-		return shineDamper;
+	private int numberOfRows;
+
+	private Texture() {
+		hasTransparency = false;
+		useFakeLighting = false;
+		numberOfRows = 1;
+		shininess = 32;
 	}
 
-	public void setShineDamper(float shineDamper) {
-		this.shineDamper = shineDamper;
+	public Texture(int textureId) {
+		this();
+		this.diffuseId = textureId;
+		this.specularId = textureId;
 	}
 
-	public float getReflectivity() {
-		return reflectivity;
-	}
-
-	public void setReflectivity(float reflectivity) {
-		this.reflectivity = reflectivity;
-	}
-
-	public Texture(int id, int numberOfRows) {
-		super();
-		this.id = id;
+	public Texture(int textureId, int numberOfRows) {
+		this(textureId);
 		this.numberOfRows = numberOfRows;
 	}
 
-	public Texture(int id) {
-		super();
-		this.id = id;
-	}
-
-	public Texture(int id, float shineDamper, float reflectivity, boolean hasTransparency) {
-		super();
-		this.id = id;
-		this.shineDamper = shineDamper;
-		this.reflectivity = reflectivity;
+	public Texture(int textureId, boolean hasTransparency, boolean useFakeLighting) {
+		this(textureId);
 		this.hasTransparency = hasTransparency;
+		this.useFakeLighting = useFakeLighting;
 	}
 
-	public int getId() {
-		return id;
+	public Texture(int textureId, boolean hasTransparency, boolean useFakeLighting, int numberOfRows) {
+		this(textureId, hasTransparency, useFakeLighting);
+		this.numberOfRows = numberOfRows;
 	}
 
-	public void setId(int id) {
-		this.id = id;
+	public int getDiffuseId() {
+		return diffuseId;
+	}
+
+	public void setDiffuseId(int diffuseId) {
+		this.diffuseId = diffuseId;
+	}
+
+	public int getSpecularId() {
+		return specularId;
+	}
+
+	public void setSpecularId(int specularId) {
+		this.specularId = specularId;
 	}
 
 	public boolean isHasTransparency() {
@@ -69,12 +72,20 @@ public class Texture {
 		this.useFakeLighting = useFakeLighting;
 	}
 
+	public int getNumberOfRows() {
+		return numberOfRows;
+	}
+
 	public void setNumberOfRows(int numberOfRows) {
 		this.numberOfRows = numberOfRows;
 	}
 
-	public int getNumberOfRows() {
-		return numberOfRows;
+	public float getShininess() {
+		return shininess;
+	}
+
+	public void setShininess(float shininess) {
+		this.shininess = shininess;
 	}
 
 }

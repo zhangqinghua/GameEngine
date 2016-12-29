@@ -76,7 +76,7 @@ public class TerrainShader extends ShaderProgram {
 
 	public void loadLight(Light light) {
 		super.loadVertor(location_lightPosition, light.getPosition());
-		super.loadVertor(location_lightColour, light.getColour());
+		super.loadVertor(location_lightColour, light.getColor());
 
 	}
 

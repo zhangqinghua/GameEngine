@@ -1,5 +1,6 @@
 package entities;
 
+import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
 import models.Model;
@@ -45,16 +46,11 @@ public class Entity {
 		this.rotZ += dz;
 	}
 
-	public float getTextureXOffset() {
+	public Vector2f getTextureOffset() {
 		int textureNumberOfRows = model.getTexture().getNumberOfRows();
 		int column = textureIndex % textureNumberOfRows;
-		return column / (float) textureNumberOfRows;
-	}
-
-	public float getTextureYOffset() {
-		int textureNumberOfRows = model.getTexture().getNumberOfRows();
 		int row = textureIndex / textureNumberOfRows;
-		return row / (float) textureNumberOfRows;
+		return new Vector2f(column / (float) textureNumberOfRows, row / (float) textureNumberOfRows);
 	}
 
 	public Model getModel() {
