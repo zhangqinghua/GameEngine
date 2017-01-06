@@ -1,2 +1,6 @@
-/shaders/
+/renderEngine/
+/skybox/
 /engineTester/
+/entities/
+/shaders/
+/toolbox/

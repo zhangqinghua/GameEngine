@@ -1,5 +1,7 @@
 package shaders;
 
+import java.util.List;
+
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 
@@ -15,20 +17,22 @@ public class TerrainShader extends ShaderProgram {
 	private int location_moel;
 	private int location_view;
 	private int location_projection;
-
-	private int location_lightPosition;
-	private int location_lightColour;
-
-	private int location_shineDamper;
-	private int location_reflectivity;
 	
 	private int location_skyColour;
+	
+	private int location_light_num;
+	
+	private int location_viewPos;
+	
+	private int location_shininess;
 	
 	private int location_backgroundTexture;
 	private int location_rTexture;
 	private int location_gTexture;
 	private int location_bTexture;
 	private int location_blendMap;
+	
+	
 
 	public TerrainShader() {
 		super(VERTEX_FILE, FRAGMENT_FILE);
@@ -46,13 +50,14 @@ public class TerrainShader extends ShaderProgram {
 		location_moel = super.getUniformLocation("model");
 		location_view = super.getUniformLocation("view");
 		location_projection = super.getUniformLocation("projection");
-
-		location_lightPosition = super.getUniformLocation("lightPosition");
-		location_lightColour = super.getUniformLocation("lightColour");
-		location_shineDamper = super.getUniformLocation("shineDamper");
-		location_reflectivity = super.getUniformLocation("reflectivity");
 		
 		location_skyColour = super.getUniformLocation("skyColour");
+		
+		location_light_num = super.getUniformLocation("light_num");
+		
+		location_viewPos = super.getUniformLocation("viewPos");
+		
+		location_shininess = super.getUniformLocation("shininess");
 		
 		location_backgroundTexture = super.getUniformLocation("backgroundTexture");
 		location_rTexture = super.getUniformLocation("rTexture");
@@ -74,17 +79,6 @@ public class TerrainShader extends ShaderProgram {
 		super.loadMatrix(location_projection, matrix);
 	}
 
-	public void loadLight(Light light) {
-		super.loadVertor(location_lightPosition, light.getPosition());
-		super.loadVertor(location_lightColour, light.getColor());
-
-	}
-
-	public void loadShineVariablee(float damper, float reflectivity) {
-		super.loadFloat(location_shineDamper, damper);
-		super.loadFloat(location_reflectivity, reflectivity);
-	}
-
 	public void loadSkyColour(float r, float g, float b) {
 		super.loadVertor(location_skyColour, new Vector3f(r, g, b));
 	}
@@ -95,5 +89,25 @@ public class TerrainShader extends ShaderProgram {
 		super.loadInt(location_gTexture, 2);
 		super.loadInt(location_bTexture, 3);
 		super.loadInt(location_blendMap, 4);
+	}
+	
+	public void loadLights(List<Light> lights) {
+		super.loadInt(location_light_num, lights.size());
+		for (int i = 0; i < lights.size(); i++) {
+			super.loadVertor(super.getUniformLocation("lights[" + i + "].position"), lights.get(i).getPosition());
+			super.loadVertor(super.getUniformLocation("lights[" + i + "].color"), lights.get(i).getColor());
+
+			super.loadVertor(super.getUniformLocation("lights[" + i + "].attenuation"), lights.get(i).getAttenuation());
+			
+			super.loadVertor(super.getUniformLocation("lights[" + i + "].direction"), lights.get(i).getDirection());
+			super.loadFloat(super.getUniformLocation("lights[" + i + "].cutOff"), lights.get(i).getCutOff());
+		}
+	}
+	public void loadViewPos(Camera camera) {
+		super.loadVertor(location_viewPos, camera.getPosition());
+	}
+	
+	public void loadShininess(float shininess) {
+		super.loadFloat(location_shininess, shininess);
 	}
 }

@@ -1,5 +1,20 @@
 #version 400 core
 
+struct Light {
+	float isExist;
+	
+    vec3 position;
+    vec3 color;
+
+  	vec3 attenuation;
+    // float constant;
+    // float linear;
+    // float quadratic;
+    
+    vec3 direction;
+    float cutOff;
+};
+
 in vec3 FragPos;
 in vec3 Normal;
 in vec2 TexCoords;
@@ -7,19 +22,32 @@ in float visibility;
 
 out vec4 color;
 
-uniform vec3 lightColour;
-uniform vec3 lightPos; 
+
+const float ambientStrength = 0.2f;
+const int MAX_LIGHT_NUM = 4;
+
+uniform int light_num;
+uniform Light lights[MAX_LIGHT_NUM];
+
 uniform vec3 viewPos;
+
 uniform sampler2D backgroundTexture;
 uniform sampler2D rTexture;
 uniform sampler2D gTexture;
 uniform sampler2D bTexture;
 uniform sampler2D blendMap;
 
-uniform float useFakeLighting;
 uniform vec3 skyColour;
+
+uniform float shininess;
+
+// Function prototypes
+vec4 CalcDirLight(Light light, vec3 lightDir, vec3 terrainColor,vec3 normal, vec3 viewDir);
+vec4 CalcPointLight(Light light, vec3 lightDir, vec3 terrainColor,vec3 normal, vec3 fragPos, vec3 viewDir);
 void main() {
+	color = vec4(0, 0, 0, 1);
 	
+	/*多地图混合*/
 	vec4 blendMapColour = texture(blendMap, TexCoords);
 	float backTextureAmount = 1 - (blendMapColour.r + blendMapColour.g + blendMapColour.b);
 	vec2 tiledCoords = TexCoords * 40;
@@ -27,25 +55,72 @@ void main() {
 	vec4 rTextureColour = texture(rTexture, tiledCoords) * blendMapColour.r;
 	vec4 gTextureColour = texture(gTexture, tiledCoords) * blendMapColour.g;
 	vec4 bTextureColour = texture(bTexture, tiledCoords) * blendMapColour.b;
-	vec4 totalColour = backgroundTextureColour + rTextureColour + gTextureColour + bTextureColour;
-
-
-	/*环境光*/
-    vec3 ambient = 0.1f * lightColour;
+	vec3 totalColour = vec3(backgroundTextureColour + rTextureColour + gTextureColour + bTextureColour);
     
-	/*漫反射光*/
+    /*视线方向*/
+	vec3 viewDir = normalize(viewPos - FragPos);
+	/*法线*/ 
 	vec3 norm = normalize(Normal);
-	vec3 lightDir = normalize(lightPos - FragPos);
-	float diff = max(dot(norm, lightDir), 0.3f);
-    vec3 diffuse = diff * lightColour;
 	
-	/*镜面反射光*/
+	/*多光源*/
+    for (int i = 0; i < MAX_LIGHT_NUM && i < light_num; i++) {
+    	Light l = lights[i];
+    	vec3 lightDir = normalize(l.position - FragPos);
+    	if (false) {
+    	}else if (l.attenuation.x!=0 && l.attenuation.y!=0 && l.attenuation.z!=0) {
+    		// 3种衰减属性都不为0， 说明是点光
+    		color += CalcPointLight(l, lightDir, totalColour, norm, FragPos, viewDir);
+    	}else{
+    		// 定向光
+    		color += CalcDirLight(lights[i], lightDir, totalColour, norm, viewDir);
+    	}
+    	
+    	
+    }
+    
+    /*环境光*/
+   	color += vec4(totalColour, 1) * ambientStrength;
+    
+    /*雾化效果*/
+   	color = mix(vec4(skyColour, 1.0f), color, visibility);
+}
+
+// Calculates the color when using a directional light.
+vec4 CalcDirLight(Light light, vec3 lightDir, vec3 terrainColor, vec3 normal, vec3 viewDir)
+{
 	float specularStrength = 0.5f;
-    vec3 viewDir = normalize(viewPos - FragPos);
-    vec3 reflectDir = reflect(-lightDir, norm);  
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
-    vec3 specular = specularStrength * spec * lightColour; 
 	
-	color = vec4(ambient + diffuse + specular, 1.0f) * totalColour;
-	color = mix(vec4(skyColour, 1.0f), color, visibility);
+
+	
+    // Diffuse shading
+    float diff = max(dot(normal, lightDir), 0.0);
+    // Specular shading
+   	vec3 reflectDir = reflect(-lightDir, normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
+    // Combine results
+    // vec3 ambient = light.color * terrainColor * 0.2f;
+    vec3 diffuse = light.color * diff * terrainColor;
+    vec3 specular = light.color * spec * terrainColor * 0.1;
+   	return vec4((diffuse + specular ), 1.0f);
+}
+
+// Calculates the color when using a point light.
+vec4 CalcPointLight(Light light, vec3 lightDir, vec3 terrainColor, vec3 normal, vec3 fragPos, vec3 viewDir)
+{
+    // Diffuse shading
+    float diff = max(dot(normal, lightDir), 0.0);
+    // Specular shading
+    vec3 reflectDir = reflect(-lightDir, normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
+    // Attenuation
+    float distance = length(light.position - fragPos);
+    float attenuation = 1.0f / (light.attenuation.x + light.attenuation.y * distance + light.attenuation.z * (distance * distance));    
+    // Combine results
+    // vec3 ambient = light.color * terrainColor;
+    vec3 diffuse = light.color * diff * terrainColor;
+    vec3 specular = light.color * spec * terrainColor;
+    // ambient *= attenuation;
+    diffuse *= attenuation;
+    specular *= attenuation;
+    return vec4((diffuse + specular), 1.0);
 }

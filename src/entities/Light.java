@@ -6,9 +6,8 @@ public class Light {
 	private Vector3f position;
 	private Vector3f color;
 
-	private float constant;
-	private float linear;
-	private float quadratic;
+	// constant, linear, quadratic
+	private Vector3f attenuation;
 
 	private Vector3f direction;
 	private float cutOff;
@@ -17,11 +16,9 @@ public class Light {
 		this.position = new Vector3f(0, 0, 0);
 		this.color = new Vector3f(1, 1, 1);
 
-		this.constant = 0;
-		this.linear = 0;
-		this.quadratic = 0;
+		this.attenuation = new Vector3f(0, 0, 0);
 
-		this.direction = new Vector3f(0, 0, 0);
+		this.direction = new Vector3f(1, 1, 0);
 		this.cutOff = 0;
 	}
 
@@ -44,11 +41,9 @@ public class Light {
 	 * @param linear
 	 * @param quadratic
 	 */
-	public Light(Vector3f position, Vector3f color, float constant, float linear, float quadratic) {
+	public Light(Vector3f position, Vector3f color, Vector3f attenuation) {
 		this(position, color);
-		this.constant = constant;
-		this.linear = linear;
-		this.quadratic = quadratic;
+		this.attenuation = attenuation;
 	}
 
 	/**
@@ -61,8 +56,8 @@ public class Light {
 	 * @param linear
 	 * @param quadratic
 	 */
-	public Light(Vector3f position, Vector3f color, Vector3f direction, float cutOff, float constant, float linear, float quadratic) {
-		this(position, color, constant, linear, quadratic);
+	public Light(Vector3f position, Vector3f color, Vector3f attenuation, Vector3f direction, float cutOff) {
+		this(position, color, attenuation);
 		this.direction = direction;
 		this.cutOff = cutOff;
 	}
@@ -83,28 +78,12 @@ public class Light {
 		this.color = color;
 	}
 
-	public float getConstant() {
-		return constant;
+	public Vector3f getAttenuation() {
+		return attenuation;
 	}
 
-	public void setConstant(float constant) {
-		this.constant = constant;
-	}
-
-	public float getLinear() {
-		return linear;
-	}
-
-	public void setLinear(float linear) {
-		this.linear = linear;
-	}
-
-	public float getQuadratic() {
-		return quadratic;
-	}
-
-	public void setQuadratic(float quadratic) {
-		this.quadratic = quadratic;
+	public void setAttenuation(Vector3f attenuation) {
+		this.attenuation = attenuation;
 	}
 
 	public Vector3f getDirection() {

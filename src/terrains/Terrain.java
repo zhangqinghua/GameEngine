@@ -29,6 +29,8 @@ public class Terrain {
 	private TerrainTexture blendMap;
 
 	private float[][] heights;
+	
+	
 
 	public Terrain(int gridX, int gridZ, Loader loader, TerrainTexturePack texturePack, TerrainTexture blendMap, String heightMap) {
 		this.x = gridX * SIZE;

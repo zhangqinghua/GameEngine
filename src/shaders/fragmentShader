@@ -5,10 +5,13 @@ struct Light {
 	
     vec3 position;
     vec3 color;
+    
+    
+    vec3 attenuation;
 
-    float constant;
-    float linear;
-    float quadratic;
+    // float constant;
+    // float linear;
+    // float quadratic;
     
     vec3 direction;
     float cutOff;
@@ -18,7 +21,7 @@ struct Material {
     sampler2D diffuse;
     sampler2D specular;
     
-    float     shininess;
+    float shininess;
 
 	int numberOfRows;
 	vec2 offset;
@@ -34,11 +37,11 @@ in float visibility;
 
 out vec4 color;
 
+const float ambientStrength = 0.2f;
 const int MAX_LIGHT_NUM = 4;
-uniform Light lights[4];
 
-
-uniform Light light;
+uniform int light_num;
+uniform Light lights[MAX_LIGHT_NUM];
 
 uniform Material material;
 
@@ -48,79 +51,72 @@ uniform vec3 skyColour;
 uniform sampler2D samplerTexture;
 
 // Function prototypes
-vec4 CalcDirLight(Light light, Material material, vec3 normal, vec3 viewDir, vec2 TexCoords);
-vec3 CalcPointLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir);
+vec4 CalcDirLight(Light light, vec3 lightDir, vec3 normal, vec3 viewDir);
+vec4 CalcPointLight(Light light, vec3 lightDir, vec3 normal, vec3 fragPos, vec3 viewDir);
 
 void main() {
-	/*视线方向*/
-	vec3 viewDir = normalize(viewPos - FragPos);
-	
 	/*应对多张贴图情况*/
 	vec2 texCoords = TexCoords / material.numberOfRows + material.offset;
-
-	/*草地normal向上*/
-	vec3 actualNormal = Normal;
-    if (material.useFakeLighting > 0.5f) {
-    	actualNormal = vec3(1.0f, 1.0f, 0.0f);
-    }
-    vec3 norm = normalize(actualNormal);
-    
+	
+	/*apache 为0 的透明*/
     vec4 textureColour = texture(material.diffuse, texCoords);
-    if (textureColour.a < 0.5f) {
-    	//discard;
-    }
-    
-    
-    if (lights[1].isExist == 0.5f) {
-    	color = vec4(lights[1].isExist,lights[1].isExist,lights[1].isExist,1);	
-    }
-    
-    
-    for (int i = 0; i < 2; i++) {
-    	// color += CalcDirLight(lights[i], material, norm, viewDir, texCoords);
-    }
-    
-    
-    
-    // color = mix(vec4(skyColour, 1.0f), color, visibility);
-    // color = color;
-    /*
-    vec4 textureColour = texture(textureSampler, TexCoords);
     if (textureColour.a < 0.5f) {
     	discard;
     }
-    */
-	/*环境光*/
-   // vec3 ambient = 0.1f * lightColour;
+    
+	/*初始化颜色，被这个害惨了*/
+	color = vec4(0, 0, 0, 1);
 	
-   	
-	
-	//color = vec4(ambient + diffuse + specular, 1.0f) * texture(textureSampler, TexCoords);
-	//
-	
+	/*视线方向*/
+	vec3 viewDir = normalize(viewPos - FragPos);
+
+	/*法线 草地normal向上*/
+	vec3 actualNormal = Normal;
+    if (material.useFakeLighting > 0.5f) {
+    	actualNormal = vec3(1, 1, 1);
+    }
+    vec3 norm = normalize(actualNormal);
+    
+    /*多光源*/
+    for (int i = 0; i < MAX_LIGHT_NUM && i < light_num; i++) {
+    	Light l = lights[i];
+    	vec3 lightDir = normalize(l.position - FragPos);
+    	if (false) {
+    	}else if (l.attenuation.x!=0 && l.attenuation.y!=0 && l.attenuation.z!=0) {
+    		// 3种衰减属性都不为0， 说明是点光
+    		color += CalcPointLight(l, lightDir, norm, FragPos, viewDir);
+    	}else{
+    		// 定向光
+    		color += CalcDirLight(lights[i], lightDir, norm, viewDir);
+    	}
+    }
+    
+    /*环境光*/
+    color += textureColour  * ambientStrength;
+    
+    /*雾化效果*/
+    color = mix(vec4(skyColour, 1.0f), color, visibility);
 }
 
 
 // Calculates the color when using a directional light.
-vec4 CalcDirLight(Light light, Material material, vec3 normal, vec3 viewDir, vec2 TexCoords)
+vec4 CalcDirLight(Light light, vec3 lightDir, vec3 normal, vec3 viewDir)
 {
-    vec3 lightDir = normalize(-light.direction);
     // Diffuse shading
     float diff = max(dot(normal, lightDir), 0.0);
     // Specular shading
     vec3 reflectDir = reflect(-lightDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     // Combine results
-    vec3 ambient = light.color * vec3(texture(material.diffuse, TexCoords));
+    // vec3 ambient = light.color * vec3(texture(material.diffuse, TexCoords)) * 0.2f;
     vec3 diffuse = light.color * diff * vec3(texture(material.diffuse, TexCoords));
     vec3 specular = light.color * spec * vec3(texture(material.specular, TexCoords));
-   	return vec4((ambient + diffuse + specular), 1.0f);
+   	return vec4((diffuse + specular), 1.0f);
 }
 
 // Calculates the color when using a point light.
-vec3 CalcPointLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir)
+vec4 CalcPointLight(Light light, vec3 lightDir, vec3 normal, vec3 fragPos, vec3 viewDir)
 {
-    vec3 lightDir = normalize(light.position - fragPos);
     // Diffuse shading
     float diff = max(dot(normal, lightDir), 0.0);
     // Specular shading
@@ -128,13 +124,13 @@ vec3 CalcPointLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir)
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     // Attenuation
     float distance = length(light.position - fragPos);
-    float attenuation = 1.0f / (light.constant + light.linear * distance + light.quadratic * (distance * distance));    
+    float attenuation = 1.0f / (light.attenuation.x + light.attenuation.y * distance + light.attenuation.z * (distance * distance));    
     // Combine results
-    vec3 ambient = light.color * vec3(texture(material.diffuse, TexCoords));
+    // vec3 ambient = light.color * vec3(texture(material.diffuse, TexCoords));
     vec3 diffuse = light.color * diff * vec3(texture(material.diffuse, TexCoords));
     vec3 specular = light.color * spec * vec3(texture(material.specular, TexCoords));
-    ambient *= attenuation;
+    // ambient *= attenuation;
     diffuse *= attenuation;
     specular *= attenuation;
-    return (ambient + diffuse + specular);
+    return vec4((diffuse + specular), 1.0);
 }

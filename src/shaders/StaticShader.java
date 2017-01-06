@@ -24,6 +24,10 @@ public class StaticShader extends ShaderProgram {
 
 	private int location_skyColour;
 
+	private int location_light_num;
+
+	private int location_viewPos;
+
 	public StaticShader() {
 		super(VERTEX_FILE, FRAGMENT_FILE);
 	}
@@ -42,6 +46,10 @@ public class StaticShader extends ShaderProgram {
 		location_projection = super.getUniformLocation("projection");
 
 		location_skyColour = super.getUniformLocation("skyColour");
+
+		location_light_num = super.getUniformLocation("light_num");
+
+		location_viewPos = super.getUniformLocation("viewPos");
 	}
 
 	public void loadTransformation(Matrix4f matrix) {
@@ -58,17 +66,13 @@ public class StaticShader extends ShaderProgram {
 	}
 
 	public void loadLights(List<Light> lights) {
+		super.loadInt(location_light_num, lights.size());
 		for (int i = 0; i < lights.size(); i++) {
-			System.out.println(i);
-			super.loadFloat(super.getUniformLocation("lights[" + i + "].isExist"), 0.5f);
-			
 			super.loadVertor(super.getUniformLocation("lights[" + i + "].position"), lights.get(i).getPosition());
 			super.loadVertor(super.getUniformLocation("lights[" + i + "].color"), lights.get(i).getColor());
 
-			super.loadFloat(super.getUniformLocation("lights[" + i + "].constant"), lights.get(i).getConstant());
-			super.loadFloat(super.getUniformLocation("lights[" + i + "].linear"), lights.get(i).getLinear());
-			super.loadFloat(super.getUniformLocation("lights[" + i + "].quadratic"), lights.get(i).getQuadratic());
-
+			super.loadVertor(super.getUniformLocation("lights[" + i + "].attenuation"), lights.get(i).getAttenuation());
+			
 			super.loadVertor(super.getUniformLocation("lights[" + i + "].direction"), lights.get(i).getDirection());
 			super.loadFloat(super.getUniformLocation("lights[" + i + "].cutOff"), lights.get(i).getCutOff());
 		}
@@ -97,5 +101,9 @@ public class StaticShader extends ShaderProgram {
 
 	public void loadOffset(Vector2f offset) {
 		super.load2DVertor(super.getUniformLocation("material.offset"), offset);
+	}
+
+	public void loadViewPos(Camera camera) {
+		super.loadVertor(location_viewPos, camera.getPosition());
 	}
 }
