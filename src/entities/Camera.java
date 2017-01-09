@@ -26,7 +26,7 @@ public class Camera {
 		float horizontalDistance = calculateHorizontalDistance();
 		float verticalDistance = calculateVerticalDistance();
 		calculateCameraPosition(horizontalDistance, verticalDistance);
-		this.yaw = 180 -(player.getRotY() + angleAroundPlayer);
+		this.yaw = 180 - (player.getRotY() + angleAroundPlayer);
 	}
 
 	public Vector3f getPosition() {
@@ -88,12 +88,16 @@ public class Camera {
 			float pitchChange = Mouse.getDY() * 0.3f;
 			pitch -= pitchChange;
 		}
-	} 
+	}
 
 	private void calculateAngleArroundPlayer() {
 		if (Mouse.isButtonDown(0)) {
 			float angleChange = Mouse.getDX() * 0.3f;
 			angleAroundPlayer -= angleChange;
 		}
+	}
+
+	public void invertPitch() {
+		this.pitch = -this.pitch;
 	}
 }

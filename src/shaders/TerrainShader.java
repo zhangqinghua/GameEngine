@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
+import org.lwjgl.util.vector.Vector4f;
 
 import entities.Camera;
 import entities.Light;
@@ -25,6 +26,8 @@ public class TerrainShader extends ShaderProgram {
 	private int location_viewPos;
 	
 	private int location_shininess;
+	
+	private int location_plane;
 	
 	private int location_backgroundTexture;
 	private int location_rTexture;
@@ -58,6 +61,8 @@ public class TerrainShader extends ShaderProgram {
 		location_viewPos = super.getUniformLocation("viewPos");
 		
 		location_shininess = super.getUniformLocation("shininess");
+		
+		location_plane = super.getUniformLocation("plane");
 		
 		location_backgroundTexture = super.getUniformLocation("backgroundTexture");
 		location_rTexture = super.getUniformLocation("rTexture");
@@ -109,5 +114,9 @@ public class TerrainShader extends ShaderProgram {
 	
 	public void loadShininess(float shininess) {
 		super.loadFloat(location_shininess, shininess);
+	}
+	
+	public void loadClipPlane(Vector4f plane) {
+		super.loadVertor(location_plane, plane);
 	}
 }

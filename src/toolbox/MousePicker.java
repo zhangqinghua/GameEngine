@@ -8,7 +8,6 @@ import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
 import entities.Camera;
-import renderEngine.DisplayManager;
 
 public class MousePicker {
 
@@ -38,8 +37,17 @@ public class MousePicker {
 		float mouseY = Mouse.getY();
 		Vector2f normalizedCoords = getNormalizedDeviceCoords(mouseX, mouseY);
 		Vector4f clipCoords = new Vector4f(normalizedCoords.x, normalizedCoords.y, -1f, 1f);
+		Vector4f eyeCoords = toEyeCoords(clipCoords);
+		Vector3f worldRay = toWorldCoords(eyeCoords);
+		return worldRay;
+	}
 
-		return null;
+	private Vector3f toWorldCoords(Vector4f eyeCoords) {
+		Matrix4f invertedView = Matrix4f.invert(view, null);
+		Vector4f rayWorld = Matrix4f.transform(invertedView, eyeCoords, null);
+		Vector3f mouseRay = new Vector3f(rayWorld.x, rayWorld.y, rayWorld.z);
+		mouseRay.normalise();
+		return mouseRay;
 	}
 
 	private Vector4f toEyeCoords(Vector4f clipCoords) {

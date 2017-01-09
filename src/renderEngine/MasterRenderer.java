@@ -8,6 +8,7 @@ import java.util.Map;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Matrix4f;
+import org.lwjgl.util.vector.Vector4f;
 
 import entities.Camera;
 import entities.Entity;
@@ -31,6 +32,8 @@ public class MasterRenderer {
 	private Map<Model, List<Entity>> entities;
 	private List<Terrain> terrains;
 
+	private Matrix4f projection;
+
 	private static final float FOV = 70;
 	private static final float NEAR_PLANE = 0.1f;
 	private static final float FAR_PLANE = 1000.0f;
@@ -42,7 +45,7 @@ public class MasterRenderer {
 	public MasterRenderer(Loader loader) {
 		enableCulling();
 
-		Matrix4f projection = createProjectionMatrix();
+		projection = createProjectionMatrix();
 
 		staticShader = new StaticShader();
 		entityRenderer = new EntityRenderer(staticShader, projection);
@@ -55,10 +58,15 @@ public class MasterRenderer {
 		skyboxRenderer = new SkyboxRenderer(loader, projection, RED, GREEN, BLUE);
 	}
 
-	public void render(List<Light> lights, Camera camera) {
+	public Matrix4f getProjection() {
+		return projection;
+	}
+
+	public void render(List<Light> lights, Camera camera, Vector4f clipPlane) {
 		prepare();
 
 		staticShader.start();
+		staticShader.loadClipPlane(clipPlane);
 		staticShader.loadLights(lights);
 		staticShader.loadView(camera);
 		staticShader.loadSkyColour(RED, GREEN, BLUE);
@@ -67,6 +75,7 @@ public class MasterRenderer {
 		staticShader.stop();
 
 		terrainShader.start();
+		terrainShader.loadClipPlane(clipPlane);
 		terrainShader.loadLights(lights);
 		terrainShader.loadView(camera);
 		terrainShader.loadSkyColour(RED, GREEN, BLUE);
@@ -79,6 +88,12 @@ public class MasterRenderer {
 
 		entities.clear();
 		terrains.clear();
+	}
+
+	public void renderScence(List<Entity> entities, List<Terrain> terrains, List<Light> lights, Camera camera, Vector4f clipPlane) {
+		entities.forEach(entity -> processEntity(entity));
+		terrains.forEach(terrain -> processTerrain(terrain));
+		render(lights, camera, clipPlane);
 	}
 
 	public void processEntity(Entity entity) {

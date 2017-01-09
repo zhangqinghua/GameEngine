@@ -39,7 +39,7 @@ public class Loader {
 		return new Raw(vaoID, indices.length);
 	}
 
-	public Raw loadVAO(float[] positions, int dimensions) {
+	public Raw loadToVAO(float[] positions, int dimensions) {
 		int vaoID = createVAO();
 		storeDataInAttributeList(0, dimensions, positions);
 		unbindVAO();

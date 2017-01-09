@@ -5,8 +5,11 @@ import java.util.List;
 import java.util.Random;
 
 import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
+import org.lwjgl.util.vector.Vector4f;
 
 import entities.Camera;
 import entities.Entity;
@@ -15,16 +18,19 @@ import entities.Player;
 import guis.GuiRenderer;
 import guis.GuiTexture;
 import models.Model;
-import models.Raw;
 import models.Texture;
 import renderEngine.DisplayManager;
 import renderEngine.Loader;
 import renderEngine.MasterRenderer;
 import renderEngine.OBJLoader;
-import skybox.SkyboxRenderer;
 import terrains.Terrain;
 import textures.TerrainTexture;
 import textures.TerrainTexturePack;
+import toolbox.MousePicker;
+import water.WaterFrameBuffers;
+import water.WaterRenderer;
+import water.WaterShader;
+import water.WaterTile;
 
 public class MainGameLoop {
 
@@ -34,6 +40,7 @@ public class MainGameLoop {
 		MasterRenderer renderer = new MasterRenderer(loader);
 
 		// *********TERRAIN TEXTURE STUFF*************
+		List<Terrain> terrains = new ArrayList<Terrain>();
 		TerrainTexture backgroundTexture = new TerrainTexture(loader.loadTexture("grassy2"));
 		TerrainTexture rTexture = new TerrainTexture(loader.loadTexture("dirt"));
 		TerrainTexture gTexture = new TerrainTexture(loader.loadTexture("grassFlowers"));
@@ -41,6 +48,7 @@ public class MainGameLoop {
 		TerrainTexturePack terrainPack = new TerrainTexturePack(backgroundTexture, rTexture, gTexture, bTexture);
 		TerrainTexture blendMap = new TerrainTexture(loader.loadTexture("blendMap"));
 		Terrain terrain = new Terrain(0, -1, loader, terrainPack, blendMap, "heightmap");
+		terrains.add(terrain);
 
 		Model grass = new Model(OBJLoader.loadMoadel("grassModel", loader), new Texture(loader.loadTexture("grassTexture")));
 		grass.getTexture().setHasTransparency(true);
@@ -81,27 +89,56 @@ public class MainGameLoop {
 		entities.add(new Entity(lamp, new Vector3f(370, terrain.getHeightOfTerrain(370, -300), -300), 0, 0, 0, 1));
 		entities.add(new Entity(lamp, new Vector3f(293, terrain.getHeightOfTerrain(293, -305), -305), 0, 0, 0, 1));
 
-		Player player = new Player(new Model(OBJLoader.loadMoadel("person", loader), new Texture(loader.loadTexture("playerTexture"))), new Vector3f(370, 17, -300), 0, 0, 0, 1);
+		Player player = new Player(new Model(OBJLoader.loadMoadel("person", loader), new Texture(loader.loadTexture("playerTexture"))), new Vector3f(0, 0, 0), 0, 0, 0, 1);
+		entities.add(player);
 
 		Camera camera = new Camera(player);
+
+		MousePicker picker = new MousePicker(camera, renderer.getProjection());
 
 		List<GuiTexture> guis = new ArrayList<GuiTexture>();
 		GuiTexture gui = new GuiTexture(loader.loadTexture("socuwan"), new Vector2f(0.5f, 0.05f), new Vector2f(0.25f, 0.25f));
 		guis.add(gui);
 		GuiRenderer guiRenderer = new GuiRenderer(loader);
+
+		//*******************Water render set-up***********************
+		WaterFrameBuffers buffers = new WaterFrameBuffers();
+		WaterShader waterShader = new WaterShader();
+		WaterRenderer waterRenderer = new WaterRenderer(loader, waterShader, renderer.getProjection(), buffers);
+		List<WaterTile> waters = new ArrayList<WaterTile>();
+		WaterTile water = new WaterTile(0, 0, 0);
+		waters.add(water);
+
 		while (!Display.isCloseRequested()) {
 			// Game logic
 			camera.move();
 			player.move(terrain);
+			picker.update();
 
-			// Render
-			entities.forEach(entity -> renderer.processEntity(entity));
-			renderer.processEntity(player);
-			renderer.processTerrain(terrain);
-			renderer.render(lights, camera);
+			GL11.glEnable(GL30.GL_CLIP_DISTANCE0);
+			// Render reflection texture
+			buffers.bindReflectionFrameBuffer();
+			float distance = 2 * (camera.getPosition().y - water.getHeight());
+			camera.getPosition().y -= distance;
+			camera.invertPitch();
+			renderer.renderScence(entities, terrains, lights, camera, new Vector4f(0, 1, 0, -water.getHeight()));
+			camera.getPosition().y += distance;
+			camera.invertPitch();
+			// Render refraction texture
+			buffers.bindRefractionFrameBuffer();
+			renderer.renderScence(entities, terrains, lights, camera, new Vector4f(0, -1, 0, water.getHeight()));
+			buffers.unbindCurrentFrameBuffer();
+			waterRenderer.render(waters, camera);
+			GL11.glDisable(GL30.GL_CLIP_DISTANCE0);
+
+			// Render to scence
+			renderer.renderScence(entities, terrains, lights, camera, new Vector4f(0, -1, 0, 15));
+
 			guiRenderer.render(guis);
+
 			DisplayManager.updateDisplay();
 		}
+		buffers.cleanUp();
 		guiRenderer.cleanUp();
 		renderer.cleanUp();
 		loader.cleanUp();

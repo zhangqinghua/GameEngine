@@ -7,6 +7,7 @@ import org.lwjgl.opengl.GL13;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
+import org.lwjgl.util.vector.Vector4f;
 
 import entities.Camera;
 import entities.Light;
@@ -27,6 +28,8 @@ public class StaticShader extends ShaderProgram {
 	private int location_light_num;
 
 	private int location_viewPos;
+
+	private int location_plane;
 
 	public StaticShader() {
 		super(VERTEX_FILE, FRAGMENT_FILE);
@@ -50,6 +53,8 @@ public class StaticShader extends ShaderProgram {
 		location_light_num = super.getUniformLocation("light_num");
 
 		location_viewPos = super.getUniformLocation("viewPos");
+
+		location_plane = super.getUniformLocation("plane");
 	}
 
 	public void loadTransformation(Matrix4f matrix) {
@@ -72,7 +77,7 @@ public class StaticShader extends ShaderProgram {
 			super.loadVertor(super.getUniformLocation("lights[" + i + "].color"), lights.get(i).getColor());
 
 			super.loadVertor(super.getUniformLocation("lights[" + i + "].attenuation"), lights.get(i).getAttenuation());
-			
+
 			super.loadVertor(super.getUniformLocation("lights[" + i + "].direction"), lights.get(i).getDirection());
 			super.loadFloat(super.getUniformLocation("lights[" + i + "].cutOff"), lights.get(i).getCutOff());
 		}
@@ -105,5 +110,9 @@ public class StaticShader extends ShaderProgram {
 
 	public void loadViewPos(Camera camera) {
 		super.loadVertor(location_viewPos, camera.getPosition());
+	}
+
+	public void loadClipPlane(Vector4f plane) {
+		super.loadVertor(location_plane, plane);
 	}
 }
