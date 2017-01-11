@@ -85,7 +85,7 @@ public class TerrainShader extends ShaderProgram {
 	}
 
 	public void loadSkyColour(float r, float g, float b) {
-		super.loadVertor(location_skyColour, new Vector3f(r, g, b));
+		super.loadVector(location_skyColour, new Vector3f(r, g, b));
 	}
 	
 	public void connectTextureUnits() {
@@ -99,17 +99,17 @@ public class TerrainShader extends ShaderProgram {
 	public void loadLights(List<Light> lights) {
 		super.loadInt(location_light_num, lights.size());
 		for (int i = 0; i < lights.size(); i++) {
-			super.loadVertor(super.getUniformLocation("lights[" + i + "].position"), lights.get(i).getPosition());
-			super.loadVertor(super.getUniformLocation("lights[" + i + "].color"), lights.get(i).getColor());
+			super.loadVector(super.getUniformLocation("lights[" + i + "].position"), lights.get(i).getPosition());
+			super.loadVector(super.getUniformLocation("lights[" + i + "].color"), lights.get(i).getColor());
 
-			super.loadVertor(super.getUniformLocation("lights[" + i + "].attenuation"), lights.get(i).getAttenuation());
+			super.loadVector(super.getUniformLocation("lights[" + i + "].attenuation"), lights.get(i).getAttenuation());
 			
-			super.loadVertor(super.getUniformLocation("lights[" + i + "].direction"), lights.get(i).getDirection());
+			super.loadVector(super.getUniformLocation("lights[" + i + "].direction"), lights.get(i).getDirection());
 			super.loadFloat(super.getUniformLocation("lights[" + i + "].cutOff"), lights.get(i).getCutOff());
 		}
 	}
 	public void loadViewPos(Camera camera) {
-		super.loadVertor(location_viewPos, camera.getPosition());
+		super.loadVector(location_viewPos, camera.getPosition());
 	}
 	
 	public void loadShininess(float shininess) {
@@ -117,6 +117,6 @@ public class TerrainShader extends ShaderProgram {
 	}
 	
 	public void loadClipPlane(Vector4f plane) {
-		super.loadVertor(location_plane, plane);
+		super.loadVector(location_plane, plane);
 	}
 }

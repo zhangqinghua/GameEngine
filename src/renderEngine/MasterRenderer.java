@@ -18,6 +18,8 @@ import shaders.StaticShader;
 import shaders.TerrainShader;
 import skybox.SkyboxRenderer;
 import terrains.Terrain;
+import water.WaterRenderer;
+import water.WaterShader;
 
 public class MasterRenderer {
 
@@ -49,13 +51,15 @@ public class MasterRenderer {
 
 		staticShader = new StaticShader();
 		entityRenderer = new EntityRenderer(staticShader, projection);
+
 		terrainShader = new TerrainShader();
 		terrainRenderer = new TerrainRenderer(terrainShader, projection);
+
+		skyboxRenderer = new SkyboxRenderer(loader, projection, RED, GREEN, BLUE);
 
 		entities = new HashMap<Model, List<Entity>>();
 		terrains = new ArrayList<Terrain>();
 
-		skyboxRenderer = new SkyboxRenderer(loader, projection, RED, GREEN, BLUE);
 	}
 
 	public Matrix4f getProjection() {
