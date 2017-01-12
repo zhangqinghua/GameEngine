@@ -42,7 +42,7 @@ public class MainGameLoop {
 		// *********TERRAIN TEXTURE STUFF*************
 		List<Terrain> terrains = new ArrayList<Terrain>();
 		TerrainTexture backgroundTexture = new TerrainTexture(loader.loadTexture("grassy2"));
-		TerrainTexture rTexture = new TerrainTexture(loader.loadTexture("dirt"));
+		TerrainTexture rTexture = new TerrainTexture(loader.loadTexture("mud"));
 		TerrainTexture gTexture = new TerrainTexture(loader.loadTexture("grassFlowers"));
 		TerrainTexture bTexture = new TerrainTexture(loader.loadTexture("path"));
 		TerrainTexturePack terrainPack = new TerrainTexturePack(backgroundTexture, rTexture, gTexture, bTexture);
@@ -50,22 +50,22 @@ public class MainGameLoop {
 		Terrain terrain = new Terrain(0, -1, loader, terrainPack, blendMap, "heightmap");
 		terrains.add(terrain);
 
-		Model grass = new Model(OBJLoader.loadMoadel("grassModel", loader), new Texture(loader.loadTexture("grassTexture")));
-		grass.getTexture().setHasTransparency(true);
-		grass.getTexture().setUseFakeLighting(true);
+		//		Model grass = new Model(OBJLoader.loadMoadel("grassModel", loader), new Texture(loader.loadTexture("grassTexture")));
+		//		grass.getTexture().setHasTransparency(true);
+		//		grass.getTexture().setUseFakeLighting(true);
 
-		Model flower = new Model(OBJLoader.loadMoadel("grassModel", loader), new Texture(loader.loadTexture("flower")));
-		flower.getTexture().setHasTransparency(true);
-		flower.getTexture().setUseFakeLighting(true);
+		//		Model flower = new Model(OBJLoader.loadMoadel("grassModel", loader), new Texture(loader.loadTexture("flower")));
+		//		flower.getTexture().setHasTransparency(true);
+		//		flower.getTexture().setUseFakeLighting(true);
 
-		Model fern = new Model(OBJLoader.loadMoadel("fern", loader), new Texture(loader.loadTexture("fern")));
-		fern.getTexture().setNumberOfRows(2);
-		fern.getTexture().setHasTransparency(true);
+		//		Model fern = new Model(OBJLoader.loadMoadel("fern", loader), new Texture(loader.loadTexture("fern")));
+		//		fern.getTexture().setNumberOfRows(2);
+		//		fern.getTexture().setHasTransparency(true);
 
-		Model bobble = new Model(OBJLoader.loadMoadel("pine", loader), new Texture(loader.loadTexture("pine")));
+		Model bobble = new Model(OBJLoader.loadMoadel("pine"), new Texture(Loader.loadTexture("pine")));
 		bobble.getTexture().setHasTransparency(true);
 
-		Model lamp = new Model(OBJLoader.loadMoadel("lamp", loader), new Texture(loader.loadTexture("lamp")));
+		Model lamp = new Model(OBJLoader.loadMoadel("lamp"), new Texture(loader.loadTexture("lamp")));
 		lamp.getTexture().setUseFakeLighting(true);
 
 		List<Entity> entities = new ArrayList<Entity>();
@@ -89,7 +89,7 @@ public class MainGameLoop {
 		entities.add(new Entity(lamp, new Vector3f(370, terrain.getHeightOfTerrain(370, -300), -300), 0, 0, 0, 1));
 		entities.add(new Entity(lamp, new Vector3f(293, terrain.getHeightOfTerrain(293, -305), -305), 0, 0, 0, 1));
 
-		Player player = new Player(new Model(OBJLoader.loadMoadel("person", loader), new Texture(loader.loadTexture("playerTexture"))), new Vector3f(0, 0, 0), 0, 0, 0, 1);
+		Player player = new Player(new Model(OBJLoader.loadMoadel("person"), new Texture(loader.loadTexture("playerTexture"))), new Vector3f(0, 0, 0), 0, 0, 0, 1);
 		entities.add(player);
 
 		Camera camera = new Camera(player);
@@ -97,8 +97,8 @@ public class MainGameLoop {
 		MousePicker picker = new MousePicker(camera, renderer.getProjection());
 
 		List<GuiTexture> guis = new ArrayList<GuiTexture>();
-		GuiTexture gui = new GuiTexture(loader.loadTexture("socuwan"), new Vector2f(0.5f, 0.05f), new Vector2f(0.25f, 0.25f));
-		guis.add(gui);
+		//		GuiTexture gui = new GuiTexture(loader.loadTexture("socuwan"), new Vector2f(0.5f, 0.05f), new Vector2f(0.25f, 0.25f));
+		//		guis.add(gui);
 		GuiRenderer guiRenderer = new GuiRenderer(loader);
 
 		//*******************Water render set-up***********************
@@ -145,7 +145,7 @@ public class MainGameLoop {
 		buffers.cleanUp();
 		guiRenderer.cleanUp();
 		renderer.cleanUp();
-		loader.cleanUp();
+		Loader.cleanUp();
 		DisplayManager.closeDisplay();
 	}
 

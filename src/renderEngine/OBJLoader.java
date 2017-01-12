@@ -14,7 +14,7 @@ import models.Raw;
 
 public class OBJLoader {
 
-	public static Raw loadMoadel(String fileName, Loader loader) {
+	public static Raw loadMoadel(String fileName) {
 		FileReader fr = null;
 		try {
 			fr = new FileReader(new File("res/" + fileName + ".obj"));
@@ -88,7 +88,7 @@ public class OBJLoader {
 		for (int i = 0; i < indices.size(); i++) {
 			indicesArray[i] = indices.get(i);
 		}
-		return loader.loadToVAO(verticesArray, texturesArray, normalsArray, indicesArray);
+		return Loader.loadToVAO(verticesArray, texturesArray, normalsArray, indicesArray);
 	}
 
 	private static void processVertex(String[] vertexData, List<Integer> indices, List<Vector2f> textures,

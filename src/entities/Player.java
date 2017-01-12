@@ -42,6 +42,15 @@ public class Player extends Entity {
 		}
 	}
 
+	public void move() {
+		checkInputs();
+		super.increaseRotation(0, currentTurnSpeed * DisplayManager.getFrameTimeSeconds(), 0);
+		float distance = currentSpeed * DisplayManager.getFrameTimeSeconds();
+		float dx = (float) (distance * Math.sin(Math.toRadians(super.getRotY())));
+		float dz = (float) (distance * Math.cos(Math.toRadians(super.getRotY())));
+		super.increasePosition(dx, 0, dz);
+	}
+
 	private void jump() {
 		if (!isInAir) {
 			this.upwardsSpeed = JUMP_POWER;
