@@ -7,7 +7,7 @@
 ![](imgs/Procedural Terrain.png)
 
 ## 迷雾示例
-![](Fog.png)
+![](imgs/Fog.png)
 
 ## 多光源示例
 ![](imgs/Lights.png)
@@ -22,4 +22,4 @@
 ![](imgs/Cel Shading.png)
 
 ## 鼠标拾取移动光源
-![imgs/Mouse Picking.png]
+![](imgs/Mouse Picking.png)
