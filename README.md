@@ -4,7 +4,7 @@
 ![](imgs/Terrain.png)
 
 ## 水面示例
-![](imgs/Procedural Terrain.png)
+![](imgs/ProceduralTerrain.png)
 
 ## 迷雾示例
 ![](imgs/Fog.png)
@@ -16,10 +16,10 @@
 ![](imgs/Skybox.png)
 
 ## 粒子动画效果
-![](imgs/Animating Particle Textures.png)
+![](imgs/AnimatingParticleTextures.png)
 
 ## 卡通化Shader
-![](imgs/Cel Shading.png)
+![](imgs/CelShading.png)
 
 ## 鼠标拾取移动光源
-![](imgs/Mouse Picking.png)
+![](imgs/MousePicking.png)
